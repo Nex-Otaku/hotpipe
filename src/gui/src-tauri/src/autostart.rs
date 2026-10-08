@@ -10,7 +10,7 @@ use std::os::windows::process::CommandExt;
 use std::process::Command;
 
 const KEY: &str = r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run";
-const VALUE: &str = "hotpipe";
+const VALUE: &str = "HotPipe";
 
 #[derive(serde::Serialize)]
 pub struct State {
@@ -44,6 +44,13 @@ pub fn get() -> State {
 
 pub fn set(on: bool) -> Result<(), String> {
     let out = if on {
+        // Имена в реестре регистр не различают, и reg add поверх прежней
+        // записи «hotpipe» (до переименования) оставил бы её написание.
+        // Поэтому сначала удаляем, потом пишем заново.
+        let _ = Command::new("reg.exe")
+            .args(["delete", KEY, "/v", VALUE, "/f"])
+            .creation_flags(CREATE_NO_WINDOW)
+            .output();
         Command::new("reg.exe")
             .args(["add", KEY, "/v", VALUE, "/t", "REG_SZ", "/d", &wanted()?, "/f"])
             .creation_flags(CREATE_NO_WINDOW)

@@ -2,7 +2,7 @@
 name = "hotpipe-gui"
 version = "0.1.0"
 edition = "2021"
-description = "Окно управления SSH-туннелями hotpipe"
+description = "Окно управления SSH-туннелями HotPipe"
 rust-version = "1.70"
 
 [build-dependencies]
