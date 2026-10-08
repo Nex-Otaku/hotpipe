@@ -1,0 +1,48 @@
+# Собранные двоичные файлы перечисляются поимённо, без шаблонов по расширению:
+# иначе выпуски в dist/ пришлось бы возвращать отрицающим правилом (как в wsldrive).
+build/hotpipe-server
+build/hotpipe-gui.exe
+src/hotpipe-server
+src/cmd/hotpipe-server/hotpipe-server
+
+# Сборочный кэш Rust (при сборке прямо на месте, а не через копию на D:)
+src/gui/src-tauri/target/
+# Схемы, которые tauri-build создаёт при сборке
+src/gui/src-tauri/gen/
+src/gui/src-tauri/WixTools/
+
+# Что остаётся после запуска окна прямо из дерева проекта: его настройки,
+# журнал и данные WebView2 лежат рядом с exe
+gui-config.json
+hotpipe-gui.log
+hotpipe-gui.log.1
+keeper.lock
+webview/
+
+# Журнал сервера, если его запускали с конфигом в дереве проекта
+*.log
+*.log.1
+
+# Личные данные: адрес своего сервера для живой проверки и свои туннели.
+# Образец — .env.example, он в хранилище есть.
+.env
+.env.*
+!.env.example
+tunnels.json
+tunnels.json.bak
+
+# Go: двоичные файлы проверок и профили
+*.test
+*.out
+*.prof
+
+# Python (icons/make-icon.py)
+__pycache__/
+
+# Редакторы и ОС
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini

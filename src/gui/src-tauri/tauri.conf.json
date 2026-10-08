@@ -1,0 +1,46 @@
+{
+  "build": {
+    "distDir": "../ui",
+    "devPath": "../ui",
+    "beforeBuildCommand": "",
+    "beforeDevCommand": "",
+    "withGlobalTauri": true
+  },
+  "package": {
+    "productName": "hotpipe-gui",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false
+    },
+    "bundle": {
+      "active": true,
+      "targets": [
+        "nsis"
+      ],
+      "identifier": "dev.hotpipe.gui",
+      "icon": [
+        "icons/icon.ico"
+      ],
+      "shortDescription": "Постоянные SSH-туннели в WSL"
+    },
+    "security": {
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'",
+      "dangerousDisableAssetCspModification": [
+        "style-src"
+      ]
+    },
+    "windows": [
+      {
+        "title": "hotpipe",
+        "width": 920,
+        "height": 760,
+        "minWidth": 640,
+        "minHeight": 480,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ]
+  }
+}
