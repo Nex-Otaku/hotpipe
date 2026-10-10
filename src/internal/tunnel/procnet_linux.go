@@ -7,16 +7,11 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 // Поднят ли туннель, узнаём по /proc: слушает ли сам процесс ssh свой
-// локальный порт.
-//
-// Не подключением к порту. Подключение к -L туннелю ssh тут же передаёт на ту
-// сторону, и каждая проверка была бы настоящим соединением с удалённой службой.
-// MySQL, например, считает такие оборванные соединения ошибками и после сотни
-// (max_connect_errors) блокирует адрес — а адресом этим для неё был бы её же
-// 127.0.0.1 (Р-004).
+// локальный порт (почему не подключением — см. holder.go).
 
 // procRoot — корень /proc; в проверках подменяется.
 var procRoot = "/proc"
@@ -99,43 +94,6 @@ func Listening(pid, port int) bool {
 	return false
 }
 
-// Holder — кто держит порт.
-type Holder struct {
-	PID     int
-	Comm    string
-	Cmdline string
-	PPID    int
-	// Tunnel и Server — из метки: туннель и pid сервера, запустившего этот
-	// ssh. Пусто — процесс не наш.
-	Tunnel string
-	Server int
-}
-
-// Orphan — наш ssh, переживший свой сервер.
-//
-// Метки мало: ssh с меткой может принадлежать живому серверу — второму
-// экземпляру или проверкам, — и убить его значило бы уронить чужой работающий
-// туннель. Так однажды прогон тестов и уронил настоящий туннель. Сирота — тот,
-// чей родитель уже не записанный в метке сервер: умерший сервер передаёт своих
-// детей init.
-func (h Holder) Orphan() bool {
-	return h.Tunnel != "" && h.PPID != h.Server
-}
-
-func (h Holder) String() string {
-	return fmt.Sprintf("%s (pid %d)", h.Comm, h.PID)
-}
-
-// envMarker — переменная окружения, которой помечаются наши ssh:
-// HOTPIPE_TUNNEL=<pid сервера>:<id туннеля>. По ней осиротевший ssh от упавшего
-// сервера отличается от ssh, запущенного человеком руками: первый можно убрать,
-// второй трогать нельзя.
-const envMarker = "HOTPIPE_TUNNEL"
-
-func markerValue(id string) string {
-	return fmt.Sprintf("%d:%s", os.Getpid(), id)
-}
-
 // PortHolder ищет процесс, слушающий порт. Видны только процессы того же
 // пользователя — для чужих /proc/<pid>/fd закрыт, — но туннели и запускает
 // тот же пользователь.
@@ -166,6 +124,21 @@ func PortHolder(port int) (Holder, bool) {
 	return Holder{}, false
 }
 
+// sysProcAttr — как запускать ssh.
+func sysProcAttr() *syscall.SysProcAttr {
+	return &syscall.SysProcAttr{
+		// Своя группа — чтобы сигнал дошёл и до того, что ssh мог запустить
+		// (ProxyCommand из ~/.ssh/config).
+		Setpgid: true,
+		// Упади сервер сам — ssh уйдёт за ним и не останется держать порт.
+		Pdeathsig: syscall.SIGTERM,
+	}
+}
+
+// В Linux метка — в окружении ssh: /proc/<pid>/environ его показывает.
+func markerEnv(v string) []string  { return []string{envMarker + "=" + v} }
+func markerArgs(v string) []string { return nil }
+
 func describe(pid int) Holder {
 	h := Holder{PID: pid}
 	base := filepath.Join(procRoot, strconv.Itoa(pid))
@@ -187,10 +160,7 @@ func describe(pid int) Holder {
 	if b, err := os.ReadFile(filepath.Join(base, "environ")); err == nil {
 		for _, kv := range strings.Split(string(b), "\x00") {
 			if v, ok := strings.CutPrefix(kv, envMarker+"="); ok {
-				if srv, id, ok := strings.Cut(v, ":"); ok {
-					h.Server, _ = strconv.Atoi(srv)
-					h.Tunnel = id
-				}
+				parseMarker(v, &h)
 			}
 		}
 	}

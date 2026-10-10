@@ -213,10 +213,11 @@ func TestSiblingNotKilled(t *testing.T) {
 
 func execFake(t *testing.T, tn config.Tunnel, marker string) int {
 	attr := &os.ProcAttr{
-		Env:   append(os.Environ(), "FAKE_SSH=ok", envMarker+"="+marker),
+		Env:   append(append(os.Environ(), "FAKE_SSH=ok"), markerEnv(marker)...),
 		Files: []*os.File{nil, nil, os.Stderr},
 	}
-	p, err := os.StartProcess(os.Args[0], append([]string{os.Args[0]}, Args(tn, config.Default().Settings)...), attr)
+	args := append(append([]string{os.Args[0]}, markerArgs(marker)...), Args(tn, config.Default().Settings)...)
+	p, err := os.StartProcess(os.Args[0], args, attr)
 	if err != nil {
 		t.Fatal(err)
 	}

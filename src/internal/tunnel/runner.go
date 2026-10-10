@@ -56,7 +56,7 @@ var (
 	// после подключения бывает долгий обмен ключами на медленной связи.
 	connectLimit = 45 * time.Second
 
-	// Как часто сверяться с /proc.
+	// Как часто проверять, слушает ли ssh порт.
 	pollConnecting = 300 * time.Millisecond
 	pollUp         = 2 * time.Second
 
@@ -210,15 +210,10 @@ func (r *runner) once(ctx context.Context) attempt {
 		return attempt{err: fmt.Sprintf("локальный порт %d занят: %s — %s", r.spec.LocalPort, h, h.Cmdline)}
 	}
 
-	cmd := exec.Command(r.ssh, r.args...)
-	cmd.Env = append(os.Environ(), envMarker+"="+markerValue(r.spec.ID))
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		// Своя группа — чтобы сигнал дошёл и до того, что ssh мог запустить
-		// (ProxyCommand из ~/.ssh/config).
-		Setpgid: true,
-		// Упади сервер сам — ssh уйдёт за ним и не останется держать порт.
-		Pdeathsig: syscall.SIGTERM,
-	}
+	mark := markerValue(r.spec.ID)
+	cmd := exec.Command(r.ssh, append(markerArgs(mark), r.args...)...)
+	cmd.Env = append(os.Environ(), markerEnv(mark)...)
+	cmd.SysProcAttr = sysProcAttr()
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		return attempt{err: "не открыть вывод ssh: " + err.Error()}

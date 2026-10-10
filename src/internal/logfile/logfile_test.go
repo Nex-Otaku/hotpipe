@@ -84,6 +84,10 @@ func TestDefaultPathSitsBesideBinary(t *testing.T) {
 		t.Fatal(err)
 	}
 	exe, _ := os.Executable()
+	// DefaultPath разворачивает ссылки; в macOS ссылка — сам /var (→ /private/var).
+	if resolved, err := filepath.EvalSymlinks(exe); err == nil {
+		exe = resolved
+	}
 	if filepath.Dir(p) != filepath.Dir(exe) {
 		t.Errorf("журнал %s не рядом с программой %s", p, exe)
 	}
