@@ -155,13 +155,20 @@ fn wait_until(limit: Duration, mut ready: impl FnMut() -> bool) -> bool {
     }
 }
 
+/// Ставить ли сторожа. В macOS — всегда: spawn_keeper там ничего не трогает,
+/// если задание уже загружено и не устарело, а устаревшее (HotPipe.app
+/// переложили) загружает заново (Р-010).
+fn must_spawn_keeper() -> bool {
+    cfg!(target_os = "macos") || !server::keeper_alive()
+}
+
 /// Включить сервер: запомнить желание и поставить сторожа, если его нет.
 #[tauri::command(async)]
 fn server_on(app: tauri::State<App>) -> Result<(), String> {
     let _g = BusyGuard::new(&app.busy).ok_or("уже выполняется")?;
     let cfg = set_enabled(&app, true)?;
     applog::line("окно", "сервер включён");
-    if !server::keeper_alive() {
+    if must_spawn_keeper() {
         server::spawn_keeper()?;
     }
     // WSL после перезагрузки поднимается секунд десять, и это не сбой.
@@ -201,7 +208,7 @@ fn server_restart(app: tauri::State<App>) -> Result<(), String> {
     server::stop_keeper()?;
     let _ = http::request(cfg.api_port, "POST", "/api/shutdown", None);
     wait_until(Duration::from_secs(10), || !server::alive(&cfg));
-    if !server::keeper_alive() {
+    if must_spawn_keeper() {
         server::spawn_keeper()?;
     }
     if wait_until(Duration::from_secs(40), || server::alive(&cfg)) {
@@ -254,7 +261,7 @@ fn main() {
 
     // Открыв окно, человек ожидает работающий сервер: если он должен работать,
     // а сторожа нет — ставим. Выключенный кнопкой сервер не трогаем.
-    if cfg.server_enabled && !server::keeper_alive() {
+    if cfg.server_enabled && must_spawn_keeper() {
         if let Err(e) = server::spawn_keeper() {
             applog::line("окно", &e);
         }

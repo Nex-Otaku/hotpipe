@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 )
 
@@ -83,8 +84,22 @@ func describe(pid int) Holder {
 // tagged» в ~/.ssh/config) и ни на что больше он не влияет (Р-010).
 const tagPrefix = "Tag=hotpipe:"
 
-func markerEnv(v string) []string  { return nil }
-func markerArgs(v string) []string { return []string{"-o", tagPrefix + v} }
+func markerEnv(v string) []string { return nil }
+
+func markerArgs(v string) []string {
+	if !tagSupported() {
+		return nil
+	}
+	return []string{"-o", tagPrefix + v}
+}
+
+// Tag появился в OpenSSH 9.4; ssh постарше (старые macOS) отвергает
+// незнакомый параметр, и с ним не поднялся бы ни один туннель. Такой ssh
+// спрашиваем один раз и метку не ставим: сирот тогда сервер не узнает и
+// назовёт занятый порт, как чужой.
+var tagSupported = sync.OnceValue(func() bool {
+	return exec.Command("ssh", "-G", "-o", tagPrefix+"0:probe", "localhost").Run() == nil
+})
 
 // parseMarkerArgs ищет метку в аргументах. Тег из командной строки ssh
 // принимает только такой, как мы его передаём: «-o Tag=hotpipe:…».

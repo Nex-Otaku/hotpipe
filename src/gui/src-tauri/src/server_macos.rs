@@ -63,6 +63,10 @@ fn launchctl(args: &[&str]) -> Result<String, String> {
 /// HotPipe.app рядом с окном, затем ~/.local/bin, куда кладёт build/install.sh.
 pub fn server_binary(cfg: &Config) -> PathBuf {
     let set = cfg.server_binary.trim();
+    if let Some(rest) = set.strip_prefix("~/") {
+        // launchd «~» не разворачивает: путь в задании должен быть полным.
+        return config::home().join(rest);
+    }
     if !set.is_empty() {
         return PathBuf::from(set);
     }
@@ -144,17 +148,39 @@ pub fn spawn_keeper() -> Result<(), String> {
     }
     let body = plist(&cfg);
     let path = job_path();
+    let stale = std::fs::read_to_string(&path).map(|old| old != body).unwrap_or(true);
     std::fs::write(&path, &body).map_err(|e| format!("не записать {}: {e}", path.display()))?;
     // Автозапуск должен вести к тому же серверу, что и задание сейчас.
     crate::autostart::refresh(&body)?;
     let _ = launchctl(&["enable", &service()]);
     if keeper_alive() {
-        // Задание уже загружено: kickstart запустит сервер, если тот не
-        // работает (launchd мог отложить перезапуск после частых падений).
-        return launchctl(&["kickstart", &service()]).map(|_| ());
+        if !stale {
+            // Задание уже загружено: kickstart запустит сервер, если тот не
+            // работает (launchd мог отложить перезапуск после частых падений).
+            return launchctl(&["kickstart", &service()]).map(|_| ());
+        }
+        // Загруженное задание ведёт к прежнему серверу (HotPipe.app переложили,
+        // сменили путь или порт): launchd описание сам не перечитывает.
+        applog::line("окно", "описание задания изменилось — загружаю заново");
+        launchctl(&["bootout", &service()])?;
     }
     applog::line("окно", &format!("загружаю задание launchd {}", path.display()));
-    launchctl(&["bootstrap", &domain(), &path.display().to_string()]).map(|_| ())
+    bootstrap(&path)
+}
+
+/// Только что выгруженное задание launchd ещё какое-то время сворачивает —
+/// сервер останавливает свои ssh, — и bootstrap в это время отказывает
+/// («Input/output error»). Повторяем, пока не примет.
+fn bootstrap(path: &std::path::Path) -> Result<(), String> {
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(15);
+    loop {
+        match launchctl(&["bootstrap", &domain(), &path.display().to_string()]) {
+            Ok(_) => return Ok(()),
+            Err(_) if keeper_alive() => return Ok(()),
+            Err(e) if std::time::Instant::now() >= deadline => return Err(e),
+            Err(_) => std::thread::sleep(std::time::Duration::from_millis(500)),
+        }
+    }
 }
 
 /// Выгружает задание — launchd завершит сервер (SIGTERM), и сервер сам
