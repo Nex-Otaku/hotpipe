@@ -47,11 +47,11 @@
     </p>
     <div class="ms-auto flex items-center gap-3">
       <label class="inline-flex items-center gap-2 text-sm cursor-pointer"
-             title="Сторож запускается при входе в Windows и держит сервер в WSL">
+             :title="mac ? 'Сервер запускается при входе в macOS (задание launchd в ~/Library/LaunchAgents)' : 'Сторож запускается при входе в Windows и держит сервер в WSL'">
         <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500
                                       dark:bg-gray-700 dark:border-gray-600"
                :checked="status && status.autostart.enabled" @change="setAutostart($event.target.checked)">
-        Запускать при входе в Windows
+        <span x-text="mac ? 'Запускать при входе в macOS' : 'Запускать при входе в Windows'"></span>
       </label>
       <button type="button" @click="openSettings()" title="Настройки"
               class="p-2 rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-400">
@@ -87,11 +87,20 @@
        class="mb-3 p-3 rounded-lg border border-amber-300 bg-amber-50 dark:bg-gray-800 dark:border-amber-800 text-sm">
     <p class="font-medium text-amber-900 dark:text-amber-300">Сервер не отвечает</p>
     <p class="text-gray-700 dark:text-gray-300 mt-1">
+      <template x-if="!mac"><span>
       <span x-text="status && status.keeper
         ? 'Сторож работает и поднимает сервер — после перезагрузки WSL стартует секунд десять.'
         : 'Сторож не запущен.'"></span>
       Если это не проходит — посмотрите журнал окна ниже: там видно, чем кончается запуск
       <code>wsl.exe</code>. Сервер в WSL ставится командой <code class="select-text">build/install.sh</code>.
+      </span></template>
+      <template x-if="mac"><span>
+      <span x-text="status && status.keeper
+        ? 'Задание launchd загружено и поднимает сервер.'
+        : 'Задание launchd не загружено.'"></span>
+      Если это не проходит — посмотрите журнал окна ниже и
+      <code class="select-text">~/Library/Application Support/HotPipe/hotpipe-server.stderr.log</code>.
+      </span></template>
     </p>
     <p class="text-xs text-gray-500 mt-1 select-text" x-text="status && status.server_error"></p>
   </div>
@@ -205,7 +214,7 @@
       <button type="button" @click="logTab = 'server'; loadLogs()"
               :class="logTab === 'server' ? 'font-semibold underline' : 'text-gray-500'">Сервер</button>
       <button type="button" @click="logTab = 'gui'; loadLogs()"
-              :class="logTab === 'gui' ? 'font-semibold underline' : 'text-gray-500'">Окно и сторож</button>
+              :class="logTab === 'gui' ? 'font-semibold underline' : 'text-gray-500'" x-text="mac ? 'Окно' : 'Окно и сторож'"></button>
       <button type="button" class="ms-auto text-gray-500 hover:underline" @click="loadLogs()">обновить</button>
     </div>
     <p class="text-xs text-gray-500 mt-1 select-text" x-text="logPath"></p>
@@ -300,7 +309,7 @@
                 <p class="text-xs text-gray-500 mt-1">localhost — и 127.0.0.1, и ::1, как у ssh -L.</p>
               </div>
               <div>
-                <label class="block mb-1">Ключ (в WSL)</label>
+                <label class="block mb-1" x-text="mac ? 'Ключ' : 'Ключ (в WSL)'"></label>
                 <input type="text" x-model="form.identity_file" placeholder="~/.ssh/id_ed25519"
                        class="w-full p-2 rounded-lg border border-gray-300 bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
                 <p class="text-xs text-gray-500 mt-1">Пусто — ключи, которые ssh находит сам.</p>
@@ -363,7 +372,7 @@
 
           <fieldset class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 space-y-2">
             <legend class="px-1 text-xs uppercase tracking-wider text-gray-500">Где работает сервер (у окна)</legend>
-            <div>
+            <div x-show="!mac">
               <label class="block mb-1">Дистрибутив WSL</label>
               <select x-model="settings.distro"
                       class="w-full p-2 rounded-lg border border-gray-300 bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
@@ -380,8 +389,8 @@
                        class="w-full p-2 rounded-lg border border-gray-300 bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
               </div>
               <div class="col-span-2">
-                <label class="block mb-1">hotpipe-server в WSL</label>
-                <input type="text" x-model="settings.server_binary" placeholder="~/.local/bin/hotpipe-server"
+                <label class="block mb-1" x-text="mac ? 'hotpipe-server' : 'hotpipe-server в WSL'"></label>
+                <input type="text" x-model="settings.server_binary" :placeholder="mac ? 'из HotPipe.app' : '~/.local/bin/hotpipe-server'"
                        class="w-full p-2 font-mono text-xs rounded-lg border border-gray-300 bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
               </div>
             </div>

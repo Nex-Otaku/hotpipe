@@ -149,3 +149,37 @@ API на петлевом адресе виден любой программе 
 Выяснилось при первой сборке: `git … 2>$null` при `ErrorActionPreference =
 Stop` в PowerShell 5.1 бросает исключение, и вне хранилища сборка обрывалась.
 `version.ps1` выполняет git с `Continue`.
+
+## Р-010. macOS: сервер держит launchd, всё — в одном HotPipe.app
+**2026-10-10 · принято**
+
+В macOS нет WSL, и причины сторожа (Р-002) пропадают: сервер — обычный
+процесс, а поднимать его при входе и после падения умеет launchd. Поэтому:
+
+- **Сторож — задание launchd** `dev.hotpipe.server` (LaunchAgent, `KeepAlive`,
+  `RunAtLoad`). Описание лежит в `~/Library/Application Support/HotPipe/`,
+  окно загружает его (`launchctl bootstrap`). Автозапуск — та же запись в
+  `~/Library/LaunchAgents`.
+- **Выключение** — `launchctl bootout` и `disable`: иначе `KeepAlive` поднял
+  бы завершённый сервер, а автозапуск — при следующем входе. Включение снимает
+  запрет. Перезапуск из окна выгружает и загружает задание заново, чтобы
+  launchd прочёл новые путь и порт.
+- **Пакет**: сервер едет в `HotPipe.app/Contents/MacOS/hotpipe-server`
+  (`externalBin` у Tauri); окно берёт его, если путь в настройках пуст.
+  Настройки и журнал окна — в `~/Library/Application Support/HotPipe/`: внутрь
+  подписанного пакета писать нельзя. Туннели сервера — в
+  `~/Library/Application Support/hotpipe/tunnels.json` (`os.UserConfigDir`).
+- **«Поднят»** (Р-004) — по-прежнему «сам ssh слушает порт», без пробных
+  подключений; вместо `/proc` спрашиваем `lsof -iTCP:<порт> -sTCP:LISTEN -a -p
+  <pid>`. Раз в 2 с на туннель — дёшево (≈60 мс).
+- **Метка ssh** (Р-005) — в аргументах, `-o Tag=hotpipe:<pid сервера>:<id>`:
+  окружение ssh (программы Apple) macOS не отдаёт даже тому же пользователю.
+  Tag ssh только запоминает для `Match tagged`; если в `~/.ssh/config` есть
+  свой Tag, наш его перекроет.
+- **Pdeathsig** в macOS нет. ssh упавшего сервера остаётся держать порт;
+  launchd поднимает сервер, а тот убирает сироту по метке. Мягкое завершение
+  (SIGTERM от launchd или /api/shutdown) останавливает ssh как и раньше.
+
+Код по системам разведён файлами (`procnet_linux.go` / `procnet_darwin.go`,
+`server.rs` / `server_macos.rs`), а не правкой общего: сборка для WSL не
+меняется, и изменения из исходного хранилища вливаются без споров.

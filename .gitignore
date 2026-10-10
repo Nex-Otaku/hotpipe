@@ -2,6 +2,11 @@
 # иначе выпуски в dist/ пришлось бы возвращать отрицающим правилом (как в wsldrive).
 build/hotpipe-server
 build/hotpipe-gui.exe
+build/HotPipe.app/
+# Сервер, который build/build-macos.sh кладёт для пакета macOS, и значок,
+# который он собирает из icon.png
+src/gui/src-tauri/binaries/
+src/gui/src-tauri/icons/icon.icns
 src/hotpipe-server
 src/cmd/hotpipe-server/hotpipe-server
 

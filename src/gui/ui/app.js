@@ -117,6 +117,11 @@ function hotpipe() {
     logText: '',
     logPath: '',
 
+    // macOS: сервер держит launchd, WSL нет (Р-010).
+    get mac() {
+      return !!(this.status && this.status.platform === 'macos');
+    },
+
     get working() {
       return this.acting || !!(this.status && this.status.busy);
     },
@@ -199,7 +204,7 @@ function hotpipe() {
       if (this.switchOn()) {
         this.act('Выключаю сервер…', false, 'server_off');
       } else {
-        this.act('Включаю сервер… (WSL может стартовать секунд десять)', true, 'server_on');
+        this.act(this.mac ? 'Включаю сервер…' : 'Включаю сервер… (WSL может стартовать секунд десять)', true, 'server_on');
       }
     },
 
@@ -356,10 +361,10 @@ function hotpipe() {
         if (this.logTab === 'server') {
           const r = await invoke('api', { method: 'GET', path: '/api/log' });
           this.logText = r.log;
-          this.logPath = r.path ? 'WSL: ' + r.path : '';
+          this.logPath = r.path ? (this.mac ? r.path : 'WSL: ' + r.path) : '';
         } else {
           this.logText = await invoke('gui_log');
-          this.logPath = 'hotpipe-gui.log рядом с программой';
+          this.logPath = this.mac ? '~/Library/Application Support/HotPipe/hotpipe-gui.log' : 'hotpipe-gui.log рядом с программой';
         }
       } catch (e) {
         this.logText = 'не получен: ' + e;

@@ -58,6 +58,29 @@ build\deploy.ps1 -Start      # в D:\Dev\projects\hotpipe и запустить
 работает без человека и не может спросить пароль (`BatchMode=yes`). Если туннель
 пишет «сервер не принял ключ» — `ssh-copy-id -p <порт> <пользователь>@<сервер>`.
 
+## macOS
+
+Та же программа работает и в macOS — без WSL и без сторожа: сервер держит
+launchd ([Р-010](docs/decisions.md)). Окно и сервер собираются в один пакет
+`HotPipe.app`.
+
+```bash
+brew install go rustup && rustup default stable
+cargo install tauri-cli --version "^1" --locked
+build/build-macos.sh -install    # собрать и положить в ~/Applications
+```
+
+| | macOS |
+|---|---|
+| сервер | `HotPipe.app/Contents/MacOS/hotpipe-server`, задание launchd `dev.hotpipe.server` (`KeepAlive`) |
+| автозапуск | галочка «Запускать при входе в macOS» — `~/Library/LaunchAgents/dev.hotpipe.server.plist` |
+| туннели | `~/Library/Application Support/hotpipe/tunnels.json` |
+| окно, его настройки и журнал | `~/Library/Application Support/HotPipe/` |
+
+Выключенный переключателем сервер выгружается из launchd и запрещается
+(`launchctl disable`) — не поднимется и при следующем входе. Руками:
+`launchctl print gui/$(id -u)/dev.hotpipe.server`.
+
 ## Окно
 
 - **Переключатель «Сервер HotPipe»** — включает и выключает сервер вместе со

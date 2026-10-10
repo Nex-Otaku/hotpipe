@@ -49,7 +49,7 @@ func (h Holder) String() string {
 // можно убрать, второй трогать нельзя.
 //
 // Где метка носится, зависит от системы (markerEnv, markerArgs): в Linux — в
-// переменной окружения envMarker, в macOS — в аргументах ssh (Р-011).
+// переменной окружения envMarker, в macOS — в аргументах ssh (Р-010).
 const envMarker = "HOTPIPE_TUNNEL"
 
 func markerValue(id string) string {

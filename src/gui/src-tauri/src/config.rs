@@ -1,4 +1,5 @@
-// Настройки окна: gui-config.json рядом с hotpipe-gui.exe.
+// Настройки окна: gui-config.json рядом с hotpipe-gui.exe (в macOS — в
+// ~/Library/Application Support/HotPipe, см. app_dir).
 //
 // Рядом, а не в профиле пользователя: программу переносят папкой, и настройки
 // должны переезжать с ней (так же в wsldrive). Отсутствие файла — не ошибка, а
@@ -21,7 +22,8 @@ pub struct Config {
     pub api_port: u16,
 
     /// Путь к hotpipe-server внутри WSL. Пусто — ~/.local/bin/hotpipe-server,
-    /// куда его кладёт build/install.sh.
+    /// куда его кладёт build/install.sh. В macOS пусто — сервер из HotPipe.app,
+    /// а без него — тот же ~/.local/bin/hotpipe-server.
     #[serde(default)]
     pub server_binary: String,
 
@@ -50,11 +52,26 @@ impl Default for Config {
     }
 }
 
+#[cfg(not(target_os = "macos"))]
 pub fn app_dir() -> PathBuf {
     std::env::current_exe()
         .ok()
         .and_then(|p| p.parent().map(|d| d.to_path_buf()))
         .unwrap_or_else(|| PathBuf::from("."))
+}
+
+/// В macOS рядом с программой писать нельзя: она лежит внутри HotPipe.app, а
+/// подписанный пакет менять не положено. Поэтому — в Application Support.
+#[cfg(target_os = "macos")]
+pub fn app_dir() -> PathBuf {
+    let dir = home().join("Library/Application Support/HotPipe");
+    let _ = std::fs::create_dir_all(&dir);
+    dir
+}
+
+#[cfg(target_os = "macos")]
+pub fn home() -> PathBuf {
+    std::env::var_os("HOME").map(PathBuf::from).unwrap_or_else(|| PathBuf::from("."))
 }
 
 pub fn config_path() -> PathBuf {

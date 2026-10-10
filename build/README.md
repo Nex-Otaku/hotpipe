@@ -9,6 +9,7 @@
 | `install.sh` | WSL | кладёт сервер в `~/.local/bin`, просит работающий перезапуститься (сторож поднимет новый) |
 | `build-gui.ps1` | Windows | проверки и сборка `hotpipe-gui.exe` через копию в `D:\Dev\projects\hotpipe\cache\gui-build` |
 | `deploy.ps1` | Windows | кладёт окно в `D:\Dev\projects\hotpipe`; `-Start` — и запускает |
+| `build-macos.sh` | macOS | сервер и окно в одном `HotPipe.app`; `-install` — в `~/Applications` |
 | `paths.ps1`, `version.ps1` | — | общие части сценариев Windows |
 
 Из WSL сценарии Windows запускаются так:

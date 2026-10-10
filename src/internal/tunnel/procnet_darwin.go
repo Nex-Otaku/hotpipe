@@ -80,7 +80,7 @@ func describe(pid int) Holder {
 // В macOS окружение чужого процесса не прочесть: для ssh и прочих программ
 // Apple система его не отдаёт даже тому же пользователю. Поэтому метка — в
 // аргументах ssh, параметром Tag: ssh его только запоминает (для «Match
-// tagged» в ~/.ssh/config) и ни на что больше он не влияет (Р-011).
+// tagged» в ~/.ssh/config) и ни на что больше он не влияет (Р-010).
 const tagPrefix = "Tag=hotpipe:"
 
 func markerEnv(v string) []string  { return nil }
@@ -102,7 +102,7 @@ func parseMarkerArgs(args []string, h *Holder) {
 // Своя группа — чтобы сигнал дошёл и до того, что ssh мог запустить
 // (ProxyCommand из ~/.ssh/config). Pdeathsig, как в Linux, в macOS нет: ssh
 // упавшего сервера остаётся держать порт. Его убирает следующий сервер — по
-// метке он сирота, — а следующий поднимает launchd (Р-011).
+// метке он сирота, — а следующий поднимает launchd (Р-010).
 func sysProcAttr() *syscall.SysProcAttr {
 	return &syscall.SysProcAttr{Setpgid: true}
 }

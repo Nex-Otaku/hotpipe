@@ -1,0 +1,16 @@
+{
+  "package": {
+    "productName": "HotPipe"
+  },
+  "tauri": {
+    "bundle": {
+      "targets": ["app"],
+      "icon": ["icons/icon.icns"],
+      "shortDescription": "Постоянные SSH-туннели",
+      "externalBin": ["binaries/hotpipe-server"],
+      "macOS": {
+        "minimumSystemVersion": "11.0"
+      }
+    }
+  }
+}
