@@ -1,0 +1,11 @@
+#!/usr/bin/python3
+# Поддельный ssh для снимка окна: слушает локальный порт из -L и ждёт сигнала.
+# Настоящий сервер считает туннель работающим, раз этот процесс держит порт.
+import socket, sys, signal, time
+a = sys.argv
+f = a[a.index("-L") + 1].split(":")
+host, port = (f[0], int(f[1])) if len(f) == 4 else ("127.0.0.1", int(f[0]))
+s = socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+s.bind(("127.0.0.1", port)); s.listen()
+signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
+while True: time.sleep(3600)

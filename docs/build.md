@@ -15,7 +15,8 @@ src/
 build/                 build.sh, install.sh (WSL); build-gui.ps1, deploy.ps1 (Windows)
 dist/                  выпуски и журнал изменений
 docs/                  документация и журнал решений
-tools/gui/             shot.ps1 — снимок окна, uia.ps1 — нажатия в окне (проверки)
+tools/gui/             shot.ps1 — снимок окна, uia.ps1 — нажатия в окне (проверки);
+                       demo/ — выдуманные туннели для снимка в README
 ```
 
 Проверки: `cd src && go test -race ./...` (сервер, в т.ч. сквозные с поддельным
@@ -31,3 +32,9 @@ ssh: обрыв, отказ в ключе, чужой и осиротевший 
 cp .env.example .env    # и вписать свой сервер
 cd src && go test -run TestLiveTunnel -v ./internal/tunnel/
 ```
+
+Снимок окна для README (`docs/images/window.png`) снят с выдуманными туннелями
+из `tools/gui/demo`: копия `hotpipe-gui.exe` в отдельной папке, рядом
+`gui-config.json` с `"api_port": 46399` и `"server_binary"`, указывающим на
+`tools/gui/demo/demo-server`. Поддельный ssh держит порты 5435 и 6379 — они
+должны быть свободны. Снимок — `tools/gui/shot.ps1 -ProcessId <номер окна>`.
