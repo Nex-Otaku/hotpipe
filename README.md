@@ -1,5 +1,9 @@
 # HotPipe
 
+<p align=center>
+<img src="https://raw.githubusercontent.com/Nex-Otaku/hotpipe/master/docs/images/window.png" width=686px>
+</p>
+
 Часто использую SSH туннели. Вы тоже?
 
 С SSH туннелями есть проблема: они периодически и внезапно отваливаются в самый неподходящий момент, нужно их снова поднимать. 
@@ -7,10 +11,6 @@
 Да, можно сделать скрипт для запуска туннелей, но лезть его запускать мне тоже не хочется. Хочется чтобы всё само работало без моего участия.
 
 Сделал утилиту 👉 которая следит за туннелями, освобождая моё время для более важных дел.
-
-<p align=center>
-<img src="https://raw.githubusercontent.com/Nex-Otaku/hotpipe/master/docs/images/window.png" width=686px>
-</p>
 
 Состоит из двух частей:
 
