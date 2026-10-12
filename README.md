@@ -1,5 +1,9 @@
 # HotPipe
 
+<p align=center>
+<img src="https://raw.githubusercontent.com/Nex-Otaku/hotpipe/master/docs/images/window.png" width=686px>
+</p>
+
 Часто использую SSH туннели. Вы тоже?
 
 С SSH туннелями есть проблема: они периодически и внезапно отваливаются в самый неподходящий момент, нужно их снова поднимать. 
@@ -13,10 +17,6 @@
 1. Сервер на Go, крутится в WSL, поднимает туннели, мониторит их статус, переподнимает если туннель сдох.
 
 2. GUI (Tauri) на десктопе Windows — для проверки состояния, удобного управления, редактирования туннелей.
-
-<p align=center>
-<img src="https://raw.githubusercontent.com/Nex-Otaku/hotpipe/master/docs/images/window.png" width=686px>
-</p>
 
 ```
 ┌─ Windows ──────────────────────────┐      ┌─ WSL ──────────────────────────────────┐
