@@ -4,7 +4,7 @@
 #
 #   uia.ps1 dump                 флажки и кнопки окна
 #   uia.ps1 toggle autostart     щёлкнуть флажок «Запускать при входе в Windows»
-#   uia.ps1 click settings|save|cancel|add
+#   uia.ps1 click settings|save|cancel|add|logs|close
 param([string]$Action = "dump", [string]$What = "")
 
 [Console]::OutputEncoding = [Text.Encoding]::UTF8
@@ -17,6 +17,7 @@ $CT = [System.Windows.Automation.ControlType]
 $names = @{
     autostart = "Запускать при входе в Windows"; server = "Сервер HotPipe:"; settings = "Настройки"
     save = "Сохранить"; cancel = "Отмена"; add = "Добавить туннель"
+    logs = "Журналы"; close = "Закрыть"
 }
 
 $p = @(Get-Process hotpipe-gui -EA SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 })
