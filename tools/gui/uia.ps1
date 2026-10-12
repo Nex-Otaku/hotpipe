@@ -16,7 +16,7 @@ $CT = [System.Windows.Automation.ControlType]
 # как их донесёт вызывающая сторона.
 $names = @{
     autostart = "Запускать при входе в Windows"; server = "Сервер HotPipe:"; settings = "Настройки"
-    save = "Сохранить"; cancel = "Отмена"; add = "+ Добавить туннель"
+    save = "Сохранить"; cancel = "Отмена"; add = "Добавить туннель"
 }
 
 $p = @(Get-Process hotpipe-gui -EA SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 })

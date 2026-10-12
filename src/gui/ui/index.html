@@ -38,29 +38,13 @@
                   after:h-5 after:w-5 after:transition-all dark:border-gray-600
                   peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
     </label>
-    <p class="text-sm text-gray-500 dark:text-gray-400 inline-flex items-center gap-2">
+    <p x-show="working || headline()" x-cloak class="text-sm text-gray-500 dark:text-gray-400 inline-flex items-center gap-2">
       <svg x-show="working" x-cloak class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
       </svg>
       <span x-text="working ? workLabel : headline()"></span>
     </p>
-    <div class="ms-auto flex items-center gap-3">
-      <label class="inline-flex items-center gap-2 text-sm cursor-pointer"
-             title="Сторож запускается при входе в Windows и держит сервер в WSL">
-        <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500
-                                      dark:bg-gray-700 dark:border-gray-600"
-               :checked="status && status.autostart.enabled" @change="setAutostart($event.target.checked)">
-        Запускать при входе в Windows
-      </label>
-      <button type="button" @click="openSettings()" title="Настройки"
-              class="p-2 rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-400">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M10.3 4.3c.4-1.8 3-1.8 3.4 0a1.7 1.7 0 0 0 2.6 1.1c1.6-1 3.4.8 2.4 2.4a1.7 1.7 0 0 0 1 2.5c1.9.5 1.9 3 0 3.5a1.7 1.7 0 0 0-1 2.5c1 1.6-.8 3.4-2.4 2.4a1.7 1.7 0 0 0-2.6 1c-.4 1.9-3 1.9-3.4 0a1.7 1.7 0 0 0-2.6-1c-1.6 1-3.4-.8-2.4-2.4a1.7 1.7 0 0 0-1-2.5c-1.9-.5-1.9-3 0-3.5a1.7 1.7 0 0 0 1-2.5c-1-1.6.8-3.4 2.4-2.4 1 .6 2.3.1 2.6-1.1Z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-        </svg>
-      </button>
-    </div>
   </div>
 
   <!-- Сообщение: ошибка последнего действия или замечание о настройках. -->
@@ -90,7 +74,7 @@
       <span x-text="status && status.keeper
         ? 'Сторож работает и поднимает сервер — после перезагрузки WSL стартует секунд десять.'
         : 'Сторож не запущен.'"></span>
-      Если это не проходит — посмотрите журнал окна ниже: там видно, чем кончается запуск
+      Если это не проходит — посмотрите «Журналы» внизу окна: там видно, чем кончается запуск
       <code>wsl.exe</code>. Сервер в WSL ставится командой <code class="select-text">build/install.sh</code>.
     </p>
     <p class="text-xs text-gray-500 mt-1 select-text" x-text="status && status.server_error"></p>
@@ -107,10 +91,14 @@
         Повторить сейчас
       </button>
       <button type="button" @click="openTunnel(null)" :disabled="!status || !status.server"
-              class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300
-                     dark:focus:ring-green-800 font-medium rounded-lg text-sm px-4 py-1.5
-                     disabled:opacity-50 disabled:cursor-not-allowed">
-        + Добавить туннель
+              class="inline-flex items-center gap-1.5 text-gray-800 bg-gray-200 hover:bg-gray-300
+                     focus:ring-4 focus:ring-gray-300 dark:text-gray-100 dark:bg-gray-700
+                     dark:hover:bg-gray-600 dark:focus:ring-gray-600 font-medium rounded-lg text-sm
+                     px-4 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+        </svg>
+        Добавить туннель
       </button>
     </div>
   </div>
@@ -155,12 +143,6 @@
           </div>
 
           <div class="flex items-center gap-1 shrink-0">
-            <button type="button" x-show="t.enabled" @click="call('POST', '/api/tunnels/' + t.id + '/restart')"
-                    title="Перезапустить" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.6m14.8 2A8 8 0 0 0 4.6 9m0 0H9m11 11v-5h-.6m0 0a8 8 0 0 1-15.4-2m15.4 2H15"/>
-              </svg>
-            </button>
             <button type="button" @click="openTunnel(t)" title="Изменить"
                     class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -196,35 +178,23 @@
     </template>
   </div>
 
-  <!-- Журналы -->
-  <details class="mt-6" @toggle="if ($event.target.open) loadLogs()">
-    <summary class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 cursor-pointer">
-      Журналы
-    </summary>
-    <div class="mt-2 flex gap-2 text-sm">
-      <button type="button" @click="logTab = 'server'; loadLogs()"
-              :class="logTab === 'server' ? 'font-semibold underline' : 'text-gray-500'">Сервер</button>
-      <button type="button" @click="logTab = 'gui'; loadLogs()"
-              :class="logTab === 'gui' ? 'font-semibold underline' : 'text-gray-500'">Окно и сторож</button>
-      <button type="button" class="ms-auto text-gray-500 hover:underline" @click="loadLogs()">обновить</button>
-    </div>
-    <p class="text-xs text-gray-500 mt-1 select-text" x-text="logPath"></p>
-    <pre x-ref="log" class="mt-1 p-2 h-64 overflow-auto text-xs rounded bg-white border border-gray-200
-                             dark:bg-gray-800 dark:border-gray-700 select-text" x-text="logText"></pre>
-  </details>
-
-  <!-- Версии -->
-  <p class="mt-6 text-xs text-gray-400 select-text">
-    <span x-text="status ? status.build : ''"></span>
-    <template x-if="status && status.server">
-      <span>
-        <br><span x-text="status.server.build"></span>
-        <span x-show="status.server.version !== status.version" class="text-amber-600 font-medium">
-          — версии окна и сервера расходятся: что-то из них не обновлено
+  <!-- Низ окна: версии коротко (полностью — в подсказке) и ссылки на
+       журналы и настройки. -->
+  <div class="mt-6 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+    <p class="text-gray-400 select-text" :title="status ? status.build + (status.server ? '\n' + status.server.build : '') : ''">
+      <span x-text="status ? 'gui ' + status.version : ''"></span><template x-if="status && status.server">
+        <span>, <span x-text="'server ' + status.server.version"></span>
+          <span x-show="status.server.version !== status.version" class="text-amber-600 font-medium">
+            — версии окна и сервера расходятся: что-то из них не обновлено
+          </span>
         </span>
-      </span>
-    </template>
-  </p>
+      </template>
+    </p>
+    <div class="ms-auto flex gap-4">
+      <button type="button" @click="openLogs()" class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">Журналы</button>
+      <button type="button" @click="openSettings()" class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">Настройки</button>
+    </div>
+  </div>
 
   <!-- Туннель: добавление и правка -->
   <div x-show="form" x-cloak class="fixed inset-0 z-40 bg-black/70 flex items-start justify-center p-4 overflow-y-auto"
@@ -330,6 +300,29 @@
     </div>
   </div>
 
+  <!-- Журналы -->
+  <div x-show="logsOpen" x-cloak class="fixed inset-0 z-40 bg-black/70 flex items-start justify-center p-4 overflow-y-auto"
+       @keydown.escape.window="logsOpen = false">
+    <div class="w-full max-w-3xl mt-8 p-5 rounded-lg bg-white dark:bg-gray-800 shadow-2xl ring-1 ring-black/5"
+         @click.outside="logsOpen = false">
+      <h3 class="text-lg font-semibold mb-3">Журналы</h3>
+      <div class="flex gap-3 text-sm">
+        <button type="button" @click="logTab = 'server'; loadLogs()"
+                :class="logTab === 'server' ? 'font-semibold underline' : 'text-gray-500'">Сервер</button>
+        <button type="button" @click="logTab = 'gui'; loadLogs()"
+                :class="logTab === 'gui' ? 'font-semibold underline' : 'text-gray-500'">Окно и сторож</button>
+        <button type="button" class="ms-auto text-gray-500 hover:underline" @click="loadLogs()">обновить</button>
+      </div>
+      <p class="text-xs text-gray-500 mt-1 select-text" x-text="logPath"></p>
+      <pre x-ref="log" class="mt-1 p-2 h-96 overflow-auto text-xs rounded bg-gray-50 border border-gray-200
+                               dark:bg-gray-900 dark:border-gray-700 select-text" x-text="logText"></pre>
+      <div class="flex justify-end pt-3">
+        <button type="button" @click="logsOpen = false"
+                class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Настройки -->
   <div x-show="settings" x-cloak class="fixed inset-0 z-40 bg-black/70 flex items-start justify-center p-4 overflow-y-auto"
        @keydown.escape.window="settings = null">
@@ -338,6 +331,16 @@
       <h3 class="text-lg font-semibold mb-3">Настройки</h3>
       <template x-if="settings">
         <div class="space-y-3 text-sm">
+          <!-- Действует сразу, не дожидаясь «Сохранить»: это не поле формы, а
+               запись в реестре, и её состояние берётся оттуда же. -->
+          <label class="flex items-center gap-2 cursor-pointer"
+                 title="Сторож запускается при входе в Windows и держит сервер в WSL">
+            <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500
+                                          dark:bg-gray-700 dark:border-gray-600"
+                   :checked="status && status.autostart.enabled" @change="setAutostart($event.target.checked)">
+            Запускать при входе в Windows
+          </label>
+
           <fieldset class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 space-y-2">
             <legend class="px-1 text-xs uppercase tracking-wider text-gray-500">Проверка связи (у сервера)</legend>
             <div class="grid grid-cols-2 gap-2">

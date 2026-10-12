@@ -17,7 +17,7 @@ build\build-gui.ps1
 build\deploy.ps1 -Start      # в D:\Dev\projects\hotpipe и запустить
 ```
 
-В окне — галочка **«Запускать при входе в Windows»**. Она записывает сторожа в
+В настройках окна — галочка **«Запускать при входе в Windows»**. Она записывает сторожа в
 `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`; права администратора не
 нужны.
 

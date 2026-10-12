@@ -113,6 +113,7 @@ function hotpipe() {
     confirmTimer: null,
     openOutput: {},
 
+    logsOpen: false,
     logTab: 'server',
     logText: '',
     logPath: '',
@@ -162,19 +163,14 @@ function hotpipe() {
       return !!(this.status && this.status.config.server_enabled);
     },
 
+    // Подпись у переключателя — только когда он сам не говорит всего: работает
+    // ли сервер, видно по цвету переключателя, а состояние туннелей — по их
+    // строкам.
     headline() {
       const s = this.status;
       if (!s) return 'Узнаю состояние…';
-      if (!s.config.server_enabled) return 'Выключен — туннели не поддерживаются';
-      if (!s.server) return 'Не отвечает';
-      const ts = s.server.tunnels;
-      const on = ts.filter((t) => t.enabled);
-      const up = ts.filter((t) => t.state === 'up');
-      if (!ts.length) return 'Работает, туннелей нет';
-      let text = 'Работает · подняты ' + up.length + ' из ' + on.length;
-      const bad = ts.filter((t) => t.state === 'waiting').length;
-      if (bad) text += ' · со сбоем ' + bad;
-      return text;
+      if (s.config.server_enabled && !s.server) return 'Не отвечает';
+      return '';
     },
 
     async act(label, target, cmd) {
@@ -350,6 +346,11 @@ function hotpipe() {
     },
 
     // --- журналы ---
+
+    openLogs() {
+      this.logsOpen = true;
+      this.loadLogs();
+    },
 
     async loadLogs() {
       try {
