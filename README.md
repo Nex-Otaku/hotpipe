@@ -15,7 +15,7 @@
 2. GUI (Tauri) на десктопе Windows — для проверки состояния, удобного управления, редактирования туннелей.
 
 
-<img src="https://raw.githubusercontent.com/Nex-Otaku/hotpipe/master/docs/images/window.png" width=50px>
+<img src="https://raw.githubusercontent.com/Nex-Otaku/hotpipe/master/docs/images/window.png" width=686px>
 
 ```
 ┌─ Windows ──────────────────────────┐      ┌─ WSL ──────────────────────────────────┐
