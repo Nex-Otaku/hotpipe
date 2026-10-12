@@ -1,6 +1,6 @@
 #!/bin/sh
-# Сервер для снимка окна: выдуманные туннели (tunnels.json рядом) и поддельный
+# Сервер для снимка окна: выдуманные туннели (demo-tunnels.json рядом) и поддельный
 # ssh вместо настоящего — никуда не подключается. Окно запускает его само, если
 # в его gui-config.json server_binary указывает сюда (см. docs/build.md).
 here=$(dirname "$(readlink -f "$0")")
-exec "$HOME/.local/bin/hotpipe-server" -config "$here/tunnels.json" -ssh "$here/fake-ssh" -no-log "$@"
+exec "$HOME/.local/bin/hotpipe-server" -config "$here/demo-tunnels.json" -ssh "$here/fake-ssh" -no-log "$@"

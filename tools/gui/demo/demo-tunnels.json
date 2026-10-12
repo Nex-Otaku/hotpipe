@@ -1,0 +1,14 @@
+{
+  "settings": { "server_alive_interval": 5, "server_alive_count_max": 3 },
+  "tunnels": [
+    { "id": "a1b2c3d4", "name": "PostgreSQL прод", "enabled": true,
+      "host": "db.example.com", "port": 22, "user": "deploy",
+      "local_host": "localhost", "local_port": 5435, "remote_host": "127.0.0.1", "remote_port": 5432 },
+    { "id": "b2c3d4e5", "name": "Redis кэш", "enabled": true,
+      "host": "cache.example.com", "port": 2222, "user": "deploy",
+      "local_host": "localhost", "local_port": 6379, "remote_host": "10.0.0.5", "remote_port": 6379 },
+    { "id": "c3d4e5f6", "name": "MySQL staging", "enabled": false,
+      "host": "staging.example.com", "port": 22, "user": "ci",
+      "local_host": "localhost", "local_port": 3307, "remote_host": "127.0.0.1", "remote_port": 3306 }
+  ]
+}
